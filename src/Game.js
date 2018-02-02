@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import Sound from 'react-sound';
 import './Game.css';
 import './helpers.css';
-import {select_sound} from './helpers.js';
+import {select_sound, randomNumber} from './helpers.js';
 import Timer from './Timer.js';
+import lives from './img/lives.png'
 
 import sounds from './sounds.js';
 
 var FontAwesome = require('react-fontawesome');
-
 
 const SECONDS = 60;
 
@@ -32,16 +32,27 @@ class Game extends Component {
             soundStatus: 'stop',
             soundName: '',
 
-            soundsToPlay: [],
+            // numbers and mark
+            number_One: '',
+            number_Two: '',
+            mark: '',
+            sums: '',
 
-            // display labyrinth
+            // display
             display: true,
 
-            // player position
-            player: {posX: 0, posY:0},
-
             // score
-            score: 0
+            score: 0,
+
+            // value input
+            inputValue: '',
+            numberValue: 0,
+
+            // disabled input
+            disabled: false,
+
+            // lives for game
+            lives: 3
         };
 
         this.turnVoices = this.turnVoices.bind(this);
@@ -64,18 +75,26 @@ class Game extends Component {
         this.handleFinishedPlaying = this.handleFinishedPlaying.bind(this);
     }
 
-    componentDidMount() {
-        this.newGame();
-
-        // add key listener
+    addEventListener () {
         document.addEventListener('keydown', this.handleKeyDown);
         document.addEventListener('keyup', this.handleKeyUp);
     }
 
-    componentWillUnmount() {
-        // remove key listener
+    removeEventListeners () {
         document.removeEventListener('keydown', this.handleKeyDown);
         document.removeEventListener('keyup', this.handleKeyUp);
+    }
+
+    componentDidMount() {
+        this.newGame();
+
+        // add key listener
+        this.addEventListener();
+    }
+
+    componentWillUnmount() {
+        // remove key listener
+        this.removeEventListeners();
     }
 
     // turn voices off/on
@@ -120,94 +139,6 @@ class Game extends Component {
         }
     }
 
-    controlPos(direction) {
-        let player = this.state.player;
-
-        switch(direction) {
-            case 'up':
-                if (player.top) {
-                    this.setState({
-                        soundStatus: 'play',
-                        soundName: 'failure'
-                    });
-                    return false;
-                } else {
-                    return true;
-                }
-            case 'down':
-                if (player.bottom) {
-                    this.setState({
-                        soundStatus: 'play',
-                        soundName: 'failure'
-                    });
-                    return false;
-                } else {
-                    return true;
-                }
-            case 'left':
-                if (player.left) {
-                    this.setState({
-                        soundStatus: 'play',
-                        soundName: 'failure'
-                    });
-                    return false;
-                } else {
-                    return true;
-                }
-            case 'right':
-                if (player.right) {
-                    this.setState({
-                        soundStatus: 'play',
-                        soundName: 'failure'
-                    });
-                    return false;
-                } else {
-                    return true;
-                }
-            default :
-                return null;
-        }
-    }
-
-    movePlayer(x, y) {
-        let newX = this.state.player.posX + x;
-        let newY = this.state.player.posY + y;
-
-        if ((newX >= 0 &&  newX <= 10/*gameArray_length*/) && (newY >= 0 && newY <= 10/*gameArray_length*/)) {
-            this.setState({
-                player: {
-                    posX: newX,
-                    posY: newY
-                }
-            }, () => {
-                if (newY !== 10/*gameArray_length*/ || newX !== 10/*gameArray_length*/) {
-                }
-            });
-
-            if (newX === 10/*gameFinish_position*/ && newY === 10/*gameFinish_position*/) {
-                let newScore = this.state.score + 10;
-
-                this.setState({
-                    soundStatus: 'play',
-                    soundName: 'success',
-
-                    player: {
-                        posX: 0,
-                        posY: 0
-                    },
-
-                    score: newScore
-                });
-
-            }
-        } else {
-            this.setState({
-                soundStatus: 'play',
-                soundName: 'failure'
-            });
-        }
-    }
-
     // handle keyDown - move player by 'Arrow keys', 'Alt' to read possible directions
     handleKeyDown(e) {
         if (!this.state.playing || !this.state.timerRun) {
@@ -220,48 +151,179 @@ class Game extends Component {
         }
 
         switch (e.keyCode) {
-            case 82:
-            default:
-                // refresh
-                e.preventDefault(); // cancel focus event from turn voices button
-                return this.newGame();
             case 18: // alt
                 e.preventDefault();
                 if (!this.state.voices) return;
-            break;
+                this.readerExam();
+                break;
 
-            // move player up
-            case 38:
-                e.preventDefault();
-
-                if (this.controlPos("up")) {
-                    this.movePlayer(-1, 0);
+            case 13:
+                if(e.keyCode === 13) {
+                    e.preventDefault();
+                    this.sumsNumber();
+                    this.compareSums();
                 }
-            break;
-            // move player down
-            case 40:
-                e.preventDefault();
+                break;
+            default:
+                break;
+        }
+    }
 
-                if (this.controlPos("down")) {
-                    this.movePlayer(1, 0);
-                }
-            break;
-            // move player left
-            case 37:
-                e.preventDefault();
+    // random generate number
+    generateRandomNumber() {
+       let number1 = randomNumber(1, 100);
+       let number2 =  randomNumber(1, 100);
+       let numberMark = randomNumber(0,4);
+       let primeNumbers = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97];
+       let primeNumber1 = primeNumbers.includes(number1);
+       let primeNumber2 = primeNumbers.includes(number2);
 
-                if (this.controlPos("left")) {
-                    this.movePlayer(0, -1);
-                }
-            break;
-            // move player right
-            case 39:
-                e.preventDefault();
+       if (numberMark === 1 && number1 < number2) {
+          return this.generateRandomNumber();
+       }
 
-                if (this.controlPos("right")) {
-                    this.movePlayer(0, 1);
-                }
-            break;
+       if (numberMark === 3 && Number.isInteger(number1/number2) === false || number1 > number2 || primeNumber1 === true || primeNumber2 === true) {
+           return this.generateRandomNumber();
+       }
+
+       if ((number1 + number2) > 100 || (number1*number2) > 100) {
+           return this.generateRandomNumber();
+       }
+
+       let mark;
+       let markStr;
+       switch (numberMark) {
+           case 0:
+               mark = '+';
+               markStr = 'plus';
+               break;
+
+           case 1:
+               mark = '-';
+               markStr = 'mínus';
+               break;
+
+           case 2:
+               mark = '*';
+               markStr = 'krát';
+               break;
+
+           case 3:
+               mark = '/';
+               markStr = 'děleno';
+               break;
+
+           default:
+               break;
+       }
+
+        this.setState({
+            number_One: number1,
+            number_Two: number2,
+            mark: mark
+        });
+
+        window.responsiveVoice.speak("Tvůj příklad je " + number1 + ' ' + markStr + ' ' + number2, "Czech Female");
+
+    }
+
+    readerExam () {
+        let number1 = this.state.number_One;
+        let number2 = this.state.number_Two;
+        let mark = this.state.mark;
+        let markStr;
+
+        switch (mark) {
+            case '+':
+                markStr = 'plus';
+                break;
+
+            case '-':
+                markStr = 'mínus';
+                break;
+
+            case '*':
+                markStr = 'krát';
+                break;
+
+            case '/':
+                markStr = 'děleno';
+                break;
+
+            default:
+                break;
+        }
+        window.responsiveVoice.speak("Tvůj příklad je " + number1 + ' ' + markStr + ' ' + number2, "Czech Female");
+
+    }
+
+    // sums number
+    sumsNumber () {
+        let number1 = this.state.number_One;
+        let number2 = this.state.number_Two;
+        let mark = this.state.mark;
+        let sums;
+
+        switch (mark) {
+            case '+':
+                sums = number1 + number2;
+                break;
+
+            case '-':
+                sums = number1 - number2;
+                break;
+
+            case '*':
+                sums = number1 * number2;
+                break;
+
+            case '/':
+                sums = number1 / number2;
+                break;
+
+            default:
+                break;
+        }
+
+        this.setState({
+            sums: sums,
+        });
+    }
+
+    // compare my sums with correct sums
+    compareSums () {
+        let myValue = this.state.inputValue;
+        let myValueNumber = parseInt(myValue);
+        let correctResult = this.state.sums;
+        let newScore = 5;
+        if(myValueNumber === correctResult) {
+            this.setState({
+                soundStatus: 'play',
+                soundName: 'success',
+                score: this.state.score + newScore,
+                sums: '',
+                inputValue: ''
+            });
+        } else {
+            this.setState({
+                soundStatus: 'play',
+                soundName: 'failure',
+                sums: '',
+                inputValue: '',
+                lives: this.state.lives -1
+            });
+        }
+        if (this.state.lives > 0) {
+            this.generateRandomNumber();
+        }
+
+        if (this.state.lives === 0) {
+            this.setState({
+                disabled:true,
+                timerRun: false,
+                playing: false,
+            });
+            window.responsiveVoice.speak("Došli ti životy nahrál jsi " + this.state.score + " bodů", "Czech Female");
         }
     }
 
@@ -280,18 +342,16 @@ class Game extends Component {
     // init new game
     newGame() {
         window.clearTimeout(this.startGameTimer);
+        this.generateRandomNumber();
 
         this.setState({
             playing: false,
-
             seconds: SECONDS,
+            lives: 3,
+            disabled: false,
             timerRun: false,
-
-            player: {posX: 0, posY: 0},
-
             score: 0
         }, () => {
-
             this.setState({
                 playing: true,
                 timerRun: true
@@ -315,7 +375,8 @@ class Game extends Component {
         } else if (seconds === 0 || seconds < 0) {
             this.setState({
                 playing: false,
-                timerRun: false
+                timerRun: false,
+                disabled: true
             });
             
             window.responsiveVoice.speak("Konec hry " + this.state.score + " bodů", "Czech Female");
@@ -357,7 +418,26 @@ class Game extends Component {
                     </div>
                 </header>
 
-                <div className={display ? 'Labyrinth__area' : 'Labyrinth__area blur'}>
+                <div className={display ? 'Playground__area' : 'Playground__area blur'}>
+
+                    <div className="example-wrapper">
+                        <p className="example number-one"> {this.state.number_One} </p>
+                        <p className="mark example"> {this.state.mark} </p>
+                        <p className="example number-two"> {this.state.number_Two} </p>
+                        <p className="equals example"> = </p>
+                        <p className="sums example"> {this.state.sums} </p>
+                    </div>
+
+                    <form>
+                        <input id="myAnswer" type="number"
+                               disabled={this.state.disabled}
+                               autoFocus="autoFocus"
+                               autoComplete="off"
+                               onChange={(e) => { this.setState({inputValue:e.target.value}) }}
+                               value={this.state.inputValue}
+                               ref={(input) => this.input = input}
+                        />
+                    </form>
 
                     {
                         !this.state.display
@@ -395,6 +475,11 @@ class Game extends Component {
                 <div className="score">
                     {this.state.score}
                     <span> points</span>
+                </div>
+
+                <div className="lives">
+                    {this.state.lives}
+                    <span> <img src={lives}/></span>
                 </div>
 
                 <footer>
