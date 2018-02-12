@@ -71,8 +71,8 @@ class Game extends Component {
 
         // new game function
         this.newGame = this.newGame.bind(this);
-
         this.handleFinishedPlaying = this.handleFinishedPlaying.bind(this);
+        this.onEnd = this.onEnd.bind(this);
     }
 
     addEventListener () {
@@ -162,6 +162,7 @@ class Game extends Component {
                     e.preventDefault();
                     this.sumsNumber();
                     this.compareSums();
+
                 }
                 break;
             default:
@@ -220,10 +221,11 @@ class Game extends Component {
         this.setState({
             number_One: number1,
             number_Two: number2,
-            mark: mark
+            mark: mark,
+            timerRun: false,
         });
 
-        window.responsiveVoice.speak("Tvůj příklad je " + number1 + ' ' + markStr + ' ' + number2, "Czech Female");
+        window.responsiveVoice.speak("Tvůj příklad je " + number1 + ' ' + markStr + ' ' + number2, "Czech Female",{onend: this.onEnd});
 
     }
 
@@ -302,7 +304,7 @@ class Game extends Component {
                 soundName: 'success',
                 score: this.state.score + newScore,
                 sums: '',
-                inputValue: ''
+                inputValue: '',
             });
         } else {
             this.setState({
@@ -336,6 +338,12 @@ class Game extends Component {
     handleFinishedPlaying() {
         this.setState({
             soundStatus: 'stop'
+        });
+    }
+
+    onEnd() {
+        this.setState({
+            timerRun: true
         });
     }
 
@@ -416,6 +424,10 @@ class Game extends Component {
                             <span>číst</span>
                         </button>
                     </div>
+                    <div className="lives">
+                        {this.state.lives}
+                        <span> <img src={lives} alt="heart"/></span>
+                    </div>
                 </header>
 
                 <div className={display ? 'Playground__area' : 'Playground__area blur'}>
@@ -475,11 +487,6 @@ class Game extends Component {
                 <div className="score">
                     {this.state.score}
                     <span> points</span>
-                </div>
-
-                <div className="lives">
-                    {this.state.lives}
-                    <span> <img src={lives}/></span>
                 </div>
 
                 <footer>
