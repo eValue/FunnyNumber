@@ -225,7 +225,7 @@ class Game extends Component {
             timerRun: false,
         });
 
-        window.responsiveVoice.speak("Tvůj příklad je " + number1 + ' ' + markStr + ' ' + number2, "Czech Female",{onend: this.onEnd});
+        /*window.responsiveVoice.speak("Tvůj příklad je " + number1 + ' ' + markStr + ' ' + number2, "Czech Female",{onend: this.onEnd});*/
 
     }
 
@@ -298,6 +298,7 @@ class Game extends Component {
         let myValueNumber = parseInt(myValue);
         let correctResult = this.state.sums;
         let newScore = 5;
+        let last = this.state.sums;
         if(myValueNumber === correctResult) {
             this.setState({
                 soundStatus: 'play',
@@ -312,11 +313,46 @@ class Game extends Component {
                 soundName: 'failure',
                 sums: '',
                 inputValue: '',
-                lives: this.state.lives -1
+                lives: this.state.lives -1,
+                timerRun: false,
+                last: last
             });
         }
+
         if (this.state.lives > 0) {
             this.generateRandomNumber();
+            let number1 = this.state.number_One;
+            let number2 = this.state.number_Two;
+            let mark = this.state.mark;
+            let markStr;
+            let lastStr;
+            if (this.state.soundName === 'failure') {
+                lastStr = " Správný výsledek byl " + last;
+            } else {
+                lastStr = '';
+            }
+
+            switch (mark) {
+                case '+':
+                    markStr = 'plus';
+                    break;
+
+                case '-':
+                    markStr = 'mínus';
+                    break;
+
+                case '*':
+                    markStr = 'krát';
+                    break;
+
+                case '/':
+                    markStr = 'děleno';
+                    break;
+
+                default:
+                    break;
+            }
+            window.responsiveVoice.speak(lastStr+ " Nový příklad je " + number1 + ' ' + markStr + ' ' + number2, "Czech Female", {onend: this.onEnd});
         }
 
         if (this.state.lives === 0) {
@@ -364,6 +400,7 @@ class Game extends Component {
                 playing: true,
                 timerRun: true
             });
+            this.readerExam();
 
             this.buttonRefresh.blur();
         });
