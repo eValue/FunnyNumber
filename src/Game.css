@@ -26,7 +26,10 @@
     height: 200px;
     width: 800px;
     border-radius: 15px;
-    background: rgba(0,0,0,0.85);
+    background: rgba(85,26,139,0.95);
+    -moz-box-shadow:0 1px 8px rgba(0, 0, 0, 0.7);
+    -webkit-box-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
 }
 
 /* turn off displaying game */

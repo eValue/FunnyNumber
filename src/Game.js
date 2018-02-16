@@ -5,10 +5,8 @@ import './helpers.css';
 import {select_sound, randomNumber} from './helpers.js';
 import Timer from './Timer.js';
 import lives from './img/lives.png'
-
 import sounds from './sounds.js';
-
-var FontAwesome = require('react-fontawesome');
+let FontAwesome = require('react-fontawesome');
 
 const SECONDS = 60;
 
@@ -37,6 +35,7 @@ class Game extends Component {
             number_Two: '',
             mark: '',
             sums: '',
+            markStr: '',
 
             // display
             display: true,
@@ -57,18 +56,13 @@ class Game extends Component {
 
         this.turnVoices = this.turnVoices.bind(this);
         this.turnSound = this.turnSound.bind(this);
-
         this.controlDisplay = this.controlDisplay.bind(this);
-
         this.setTime = this.setTime.bind(this);
-
         // handle time update from timer
         this.handleTimeUpdate = this.handleTimeUpdate.bind(this);
-
         // handle keys
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
-
         // new game function
         this.newGame = this.newGame.bind(this);
         this.handleFinishedPlaying = this.handleFinishedPlaying.bind(this);
@@ -87,7 +81,6 @@ class Game extends Component {
 
     componentDidMount() {
         this.newGame();
-
         // add key listener
         this.addEventListener();
     }
@@ -141,10 +134,11 @@ class Game extends Component {
 
     // handle keyDown - move player by 'Arrow keys', 'Alt' to read possible directions
     handleKeyDown(e) {
-        if (!this.state.playing || !this.state.timerRun) {
+        if (!this.state.playing && !this.state.timerRun) {
             if (e.keyCode === 82) {
                 e.preventDefault(); // cancel focus event from turn voices button
                 this.newGame();
+                this.inputFocus();
             } else {
                 return;
             }
@@ -162,7 +156,6 @@ class Game extends Component {
                     e.preventDefault();
                     this.sumsNumber();
                     this.compareSums();
-
                 }
                 break;
             default:
@@ -170,24 +163,33 @@ class Game extends Component {
         }
     }
 
+    // focus for input if start new game
+    inputFocus() {
+        document.getElementById("myAnswer").focus();
+    }
+
     // random generate number
     generateRandomNumber() {
        let number1 = randomNumber(1, 100);
        let number2 =  randomNumber(1, 100);
-       let numberMark = randomNumber(0,4);
-       let primeNumbers = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97];
+       let numberMark = randomNumber(0,2);
+       /*let primeNumbers = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97];
        let primeNumber1 = primeNumbers.includes(number1);
-       let primeNumber2 = primeNumbers.includes(number2);
+       let primeNumber2 = primeNumbers.includes(number2);*/
 
        if (numberMark === 1 && number1 < number2) {
           return this.generateRandomNumber();
        }
 
-       if (numberMark === 3 && Number.isInteger(number1/number2) === false || number1 > number2 || primeNumber1 === true || primeNumber2 === true) {
+       /*if (numberMark === 3 && Number.isInteger(number1/number2) === false) {
            return this.generateRandomNumber();
-       }
+       }*/
 
-       if ((number1 + number2) > 100 || (number1*number2) > 100) {
+       /*if (number1 > number2 || primeNumber1 === true || primeNumber2 === true) {
+           return this.generateRandomNumber();
+       }*/
+
+       if ((number1 + number2) > 100 /*|| (number1*number2) > 100*/) {
            return this.generateRandomNumber();
        }
 
@@ -204,7 +206,7 @@ class Game extends Component {
                markStr = 'mínus';
                break;
 
-           case 2:
+           /*case 2:
                mark = '*';
                markStr = 'krát';
                break;
@@ -212,7 +214,7 @@ class Game extends Component {
            case 3:
                mark = '/';
                markStr = 'děleno';
-               break;
+               break;*/
 
            default:
                break;
@@ -222,41 +224,18 @@ class Game extends Component {
             number_One: number1,
             number_Two: number2,
             mark: mark,
+            markStr: markStr,
             timerRun: false,
         });
-
-        /*window.responsiveVoice.speak("Tvůj příklad je " + number1 + ' ' + markStr + ' ' + number2, "Czech Female",{onend: this.onEnd});*/
-
     }
 
+    // read exam
     readerExam () {
         let number1 = this.state.number_One;
         let number2 = this.state.number_Two;
-        let mark = this.state.mark;
-        let markStr;
+        let markStr = this.state.markStr;
 
-        switch (mark) {
-            case '+':
-                markStr = 'plus';
-                break;
-
-            case '-':
-                markStr = 'mínus';
-                break;
-
-            case '*':
-                markStr = 'krát';
-                break;
-
-            case '/':
-                markStr = 'děleno';
-                break;
-
-            default:
-                break;
-        }
         window.responsiveVoice.speak("Tvůj příklad je " + number1 + ' ' + markStr + ' ' + number2, "Czech Female");
-
     }
 
     // sums number
@@ -275,13 +254,13 @@ class Game extends Component {
                 sums = number1 - number2;
                 break;
 
-            case '*':
+            /*case '*':
                 sums = number1 * number2;
                 break;
 
             case '/':
                 sums = number1 / number2;
-                break;
+                break;*/
 
             default:
                 break;
@@ -323,36 +302,14 @@ class Game extends Component {
             this.generateRandomNumber();
             let number1 = this.state.number_One;
             let number2 = this.state.number_Two;
-            let mark = this.state.mark;
-            let markStr;
+            let markStr = this.state.markStr;
             let lastStr;
             if (this.state.soundName === 'failure') {
                 lastStr = " Správný výsledek byl " + last;
             } else {
                 lastStr = '';
             }
-
-            switch (mark) {
-                case '+':
-                    markStr = 'plus';
-                    break;
-
-                case '-':
-                    markStr = 'mínus';
-                    break;
-
-                case '*':
-                    markStr = 'krát';
-                    break;
-
-                case '/':
-                    markStr = 'děleno';
-                    break;
-
-                default:
-                    break;
-            }
-            window.responsiveVoice.speak(lastStr+ " Nový příklad je " + number1 + ' ' + markStr + ' ' + number2, "Czech Female", {onend: this.onEnd});
+            window.responsiveVoice.speak(lastStr + ' ' + " Nový příklad je " + number1 + ' ' + markStr + ' ' + number2, "Czech Female", {onend: this.onEnd});
         }
 
         if (this.state.lives === 0) {
@@ -394,7 +351,8 @@ class Game extends Component {
             lives: 3,
             disabled: false,
             timerRun: false,
-            score: 0
+            score: 0,
+            inputValue: ''
         }, () => {
             this.setState({
                 playing: true,
@@ -423,7 +381,6 @@ class Game extends Component {
                 timerRun: false,
                 disabled: true
             });
-            
             window.responsiveVoice.speak("Konec hry " + this.state.score + " bodů", "Czech Female");
         }
     }
@@ -445,8 +402,6 @@ class Game extends Component {
         return (
             <div className="Game">
                 <header>
-                    {/* <h1>ProjectName<span>Easy</span></h1> */}
-
                     <div className="options">
                         <button onClick={this.newGame} ref={(buttonRefresh) => { this.buttonRefresh = buttonRefresh; }}>
                             <FontAwesome name='refresh' size='2x' />
@@ -468,7 +423,6 @@ class Game extends Component {
                 </header>
 
                 <div className={display ? 'Playground__area' : 'Playground__area blur'}>
-
                     <div className="example-wrapper">
                         <p className="example number-one"> {this.state.number_One} </p>
                         <p className="mark example"> {this.state.mark} </p>
@@ -476,7 +430,6 @@ class Game extends Component {
                         <p className="equals example"> = </p>
                         <p className="sums example"> {this.state.sums} </p>
                     </div>
-
                     <form>
                         <input id="myAnswer" type="number"
                                disabled={this.state.disabled}
